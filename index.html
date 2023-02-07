@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <head>
+        <style>
+          table {
+            border-collapse: collapse;
+          }
+      
+          th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+          }
+        </style>
+        <script>
+          function submitSearch() {
+            const searchTerm = document.getElementById("searchTerm").value;
+            const searchBy = document.getElementById("searchBy").value;
+            let url = "";
+      
+            if (searchBy === "author") {
+              url = `https://www.googleapis.com/books/v1/volumes?q=inauthor:${searchTerm}`;
+            } else if (searchBy === "title") {
+              url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${searchTerm}`;
+            } else if (searchBy === "isbn") {
+              url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${searchTerm}`;
+            }
+      
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.onreadystatechange = function() {
+              if (xhr.readyState === 4 && xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+      
+                // Clear existing table
+                const existingTable = document.getElementById("bookTable");
+                if (existingTable) {
+                  existingTable.remove();
+                }
+      
+                const table = document.createElement("table");
+                table.id = "bookTable";
+                const headerRow = document.createElement("tr");
+                const headerTitle = document.createElement("th");
+                headerTitle.textContent = "Title";
+                headerRow.appendChild(headerTitle);
+                const headerAuthor = document.createElement("th");
+                headerAuthor.textContent = "Author";
+                headerRow.appendChild(headerAuthor);
+                const headerImage = document.createElement("th");
+                headerImage.textContent = "Image";
+                headerRow.appendChild(headerImage);
+                table.appendChild(headerRow);
+      
+                for (const item of response.items) {
+                  const dataRow = document.createElement("tr");
+      
+                  const titleCell = document.createElement("td");
+                  titleCell.textContent = item.volumeInfo.title;
+                  dataRow.appendChild(titleCell);
+      
+                  const authorCell = document.createElement("td");
+                  authorCell.textContent = item.volumeInfo.authors;
+                  dataRow.appendChild(authorCell);
+      
+                  const imageCell = document.createElement("td");
+                  const image = document.createElement("img");
+                  image.src = item.volumeInfo.imageLinks.thumbnail;
+                  imageCell.appendChild(image);
+                  dataRow.appendChild(imageCell);
+      
+                  table.appendChild(dataRow);
+                }
+      
+                document.body.appendChild(table);
+             
+              }
+            };
+            xhr.send();
+          }
+        </script>
+      </head>
+      <body>
+        <h1>Google Books Search</h1>
+        <label for="searchTerm">Search Term:</label>
+        <input type="text" id="searchTerm">
+        <br><br>
+        <label for="searchBy">Search By:</label>
+        <select id="searchBy">
+          <option value="author">Author</option>
+          <option value="title">Title</option>
+          <option value="isbn">ISBN</option>
+        </select>
+        <br><br>
+        <button onclick="submitSearch()">Submit</button>
+      </body>
+      </html>
+      
