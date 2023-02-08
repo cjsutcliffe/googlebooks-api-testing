@@ -7,83 +7,66 @@
     <title>Document</title>
     <head>
         <style>
-          table {
+          table, th, td {
+            border: 1px solid black;
             border-collapse: collapse;
           }
-      
           th, td {
-            border: 1px solid black;
-            padding: 8px;
+            padding: 5px;
             text-align: left;
           }
         </style>
         <script>
           function submitSearch() {
-            const searchTerm = document.getElementById("searchTerm").value;
-            const searchBy = document.getElementById("searchBy").value;
-            let url = "";
-      
-            if (searchBy === "author") {
-              url = `https://www.googleapis.com/books/v1/volumes?q=inauthor:${searchTerm}`;
-            } else if (searchBy === "title") {
-              url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${searchTerm}`;
-            } else if (searchBy === "isbn") {
-              url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${searchTerm}`;
-            }
-      
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            console.log(xhr);
+            var xhr = new XMLHttpRequest();
+            var searchTerm = document.getElementById("searchTerm").value;
+            var searchBy = document.getElementById("searchBy").value;
+            console.log(searchTerm);
+            xhr.open(
+              "GET",
+              "https://www.googleapis.com/books/v1/volumes?q=" +
+                searchBy +
+                ":" +
+                searchTerm +
+                "&maxResults=30",
+              true
+            );
             xhr.onreadystatechange = function() {
-              if (xhr.readyState === 4 && xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-      
-                // Clear existing table
-                const existingTable = document.getElementById("bookTable");
-                if (existingTable) {
-                  existingTable.remove();
+              if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                var data = JSON.parse(this.responseText);
+                var table = document.getElementById("bookTable");
+                table.innerHTML = "";
+                for (var i = 0; i < data.items.length; i++) {
+                  var row = table.insertRow(-1);
+                  var cell1 = row.insertCell(0);
+                  var link = document.createElement("a");
+                  link.setAttribute("href", data.items[i].selfLink);
+                  var image = document.createElement("img");
+                  image.setAttribute(
+                    "src",
+                    data.items[i].volumeInfo.imageLinks.thumbnail
+                  );
+                  link.appendChild(image);
+                  cell1.appendChild(link);
+                  var cell2 = row.insertCell(1);
+                  cell2.innerHTML = data.items[i].volumeInfo.title;
+                  var cell3 = row.insertCell(2);
+                  cell3.innerHTML = data.items[i].volumeInfo.authors;
                 }
-      
-                const table = document.createElement("table");
-                table.id = "bookTable";
-                const headerRow = document.createElement("tr");
-                const headerTitle = document.createElement("th");
-                headerTitle.textContent = "Title";
-                headerRow.appendChild(headerTitle);
-                const headerAuthor = document.createElement("th");
-                headerAuthor.textContent = "Author";
-                headerRow.appendChild(headerAuthor);
-                const headerImage = document.createElement("th");
-                headerImage.textContent = "Image";
-                headerRow.appendChild(headerImage);
-                table.appendChild(headerRow);
-      
-                for (const item of response.items) {
-                  const dataRow = document.createElement("tr");
-      
-                  const titleCell = document.createElement("td");
-                  titleCell.textContent = item.volumeInfo.title;
-                  dataRow.appendChild(titleCell);
-      
-                  const authorCell = document.createElement("td");
-                  authorCell.textContent = item.volumeInfo.authors;
-                  dataRow.appendChild(authorCell);
-      
-                  const imageCell = document.createElement("td");
-                  const image = document.createElement("img");
-                  image.src = item.volumeInfo.imageLinks.thumbnail;
-                  imageCell.appendChild(image);
-                  dataRow.appendChild(imageCell);
-      
-                  table.appendChild(dataRow);
-                }
-      
-                document.body.appendChild(table);
-             
+              } else if (this.readyState === XMLHttpRequest.DONE) {
+                document.getElementById("bookTable").innerHTML =
+                  "No results found.";
               }
             };
             xhr.send();
           }
+    
+          document.getElementById("searchTerm").addEventListener("keyup", function(event) {
+            if (event.keyCode === 13) {
+              event.preventDefault();
+              document.getElementById("submitButton").click();
+            }
+          });
         </script>
       </head>
       <body>
@@ -98,7 +81,8 @@
           <option value="isbn">ISBN</option>
         </select>
         <br><br>
-        <button onclick="submitSearch()">Submit</button>
+        <button id="submitButton" onclick="submitSearch()">Submit</button>
+        <br><br>
       </body>
       </html>
       
