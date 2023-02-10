@@ -4,74 +4,76 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <head>
-        <style>
-          table, th, td {
-            border: 1px solid black;
-            border-collapse: collapse;
-          }
-          th, td {
-            padding: 5px;
-            text-align: left;
-          }
-        </style>
-        <script>
-          function submitSearch() {
-            var xhr = new XMLHttpRequest();
-            var searchTerm = document.getElementById("searchTerm").value;
-            var searchBy = document.getElementById("searchBy").value;
-            console.log(searchTerm);
-            xhr.open(
-              "GET",
-              "https://www.googleapis.com/books/v1/volumes?q=" +
-                searchBy +
-                ":" +
-                searchTerm +
-                "&maxResults=40",
-              true
-            );
-            xhr.onreadystatechange = function() {
-              if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-                var data = JSON.parse(this.responseText);
-                var table = document.getElementById("bookTable");
-                table.innerHTML = "";
-                for (var i = 0; i < data.items.length; i++) {
-                  var row = table.insertRow(-1);
-                  var cell1 = row.insertCell(0);
-                  var link = document.createElement("a");
-                  link.setAttribute("href", data.items[i].selfLink);
-                  var image = document.createElement("img");
-                  image.setAttribute(
-                    "src",
-                    data.items[i].volumeInfo.imageLinks.thumbnail
-                  );
-                  link.appendChild(image);
-                  cell1.appendChild(link);
-                  var cell2 = row.insertCell(1);
-                  cell2.innerHTML = data.items[i].volumeInfo.title;
-                  var cell3 = row.insertCell(2);
-                  cell3.innerHTML = data.items[i].volumeInfo.authors;
-                }
-              } else if (this.readyState === XMLHttpRequest.DONE) {
-                document.getElementById("bookTable").innerHTML =
-                  "No results found.";
-              }
-            };
-            xhr.send();
-          }
-    
-          document.getElementById("searchTerm").addEventListener("keyup", function(event) {
-            if (event.keyCode === 13) {
-              event.preventDefault();
-              document.getElementById("submitButton").click();
+    <title>Google Books Search</title>
+    <style>
+      table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+      th, td {
+        padding: 5px;
+        text-align: left;
+      }
+    </style>
+    <script>
+      function submitSearch() {
+        var xhr = new XMLHttpRequest();
+        var searchTerm = document.getElementById("searchTerm").value;
+        var searchBy = document.getElementById("searchBy").value;
+        console.log(searchTerm);
+        xhr.open(
+          "GET",
+          "https://www.googleapis.com/books/v1/volumes?q=" +
+            searchBy +
+            ":" +
+            searchTerm +
+            "&maxResults=40",
+          true
+        );
+        xhr.onreadystatechange = function() {
+          if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+            var data = JSON.parse(this.responseText);
+            var table = document.getElementById("bookTable");
+            table.innerHTML = "";
+            for (var i = 0; i < data.items.length; i++) {
+              var row = table.insertRow(-1);
+              var cell1 = row.insertCell(0);
+              var link = document.createElement("a");
+              link.setAttribute("href", data.items[i].selfLink);
+              link.setAttribute("target", "_blank");
+              var image = document.createElement("img");
+              image.setAttribute(
+                "src",
+                data.items[i].volumeInfo.imageLinks.thumbnail
+              );
+              link.appendChild(image);
+              cell1.appendChild(link);
+              var cell2 = row.insertCell(1);
+              cell2.innerHTML = data.items[i].volumeInfo.title;
+              var cell3 = row.insertCell(2);
+              cell3.innerHTML = data.items[i].volumeInfo.authors;
             }
-          });
-        </script>
-      </head>
-      <body>
-        <h1>Google Books Search</h1>
-        <label for="searchTerm">Search Term:</label>
+          } else if (this.readyState === XMLHttpRequest.DONE) {
+            document.getElementById("bookTable").innerHTML =
+              "No results found.";
+          }
+        };
+        xhr.send();
+      }
+    
+      document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("searchTerm").addEventListener("keyup", function(event) {
+          if (event.keyCode === 13) {
+            event.preventDefault();
+            document.getElementById("submitButton").click();
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Google Books Search</h1>
+    <label for="searchTerm">Search
         <input type="text" id="searchTerm">
         <br><br>
         <label for="searchBy">Search By:</label>
@@ -83,6 +85,8 @@
         <br><br>
         <button id="submitButton" onclick="submitSearch()">Submit</button>
         <br><br>
+        <table id="bookTable">
+        </table>
       </body>
       </html>
       
